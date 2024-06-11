@@ -39,6 +39,7 @@ const Calendario = () => {
     try {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
         headers: {
+              'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       });
@@ -67,6 +68,8 @@ const Calendario = () => {
     try {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
         headers: {
+              'Content-Type': 'application/json',
+
           'Authorization': `Bearer ${token}`
         }
       });
@@ -120,6 +123,8 @@ const Calendario = () => {
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
           headers: {
+                'Content-Type': 'application/json',
+
             'Authorization': `Bearer ${token}`
           }
         });
@@ -132,6 +137,8 @@ const Calendario = () => {
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
           headers: {
+                'Content-Type': 'application/json',
+
             'Authorization': `Bearer ${token}`
           }
         });
@@ -162,6 +169,8 @@ const Calendario = () => {
       try {
         await axios.delete(`https://back-kuro-gestor-1.onrender.com/api/meeting/${id}`, {
           headers: {
+                'Content-Type': 'application/json',
+
             'Authorization': `Bearer ${token}`
           }
         });
