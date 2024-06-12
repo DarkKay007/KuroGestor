@@ -28,64 +28,67 @@ const Calendario = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [updatedDate, setUpdatedDate] = useState(new Date());
 
-// Uso de axios en el frontend
-const fetchTareas = async () => {
-  const token = Cookies.get('token');
-  if (!token) {
-    setMessage('Token no disponible');
-    console.error('Token no disponible');
-    return;
-  }
-  try {
-    const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const tasks = response.data.map(task => ({
-      id: task.tarea_id,
-      title: task.nombre,
-      start: new Date(task.fecha_limite),
-      end: new Date(task.fecha_limite),
-      allDay: true,
-      type: 'task'
-    }));
-    setTareas(tasks);
-  } catch (error) {
-    setMessage('Error al obtener las tareas');
-    console.error('Error fetching tasks:', error);
-  }
-};
 
-const fetchReuniones = async () => {
-  const token = Cookies.get('token');
-  if (!token) {
-    setMessage('Token no disponible');
-    console.error('Token no disponible');
-    return;
-  }
-  try {
-    const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const reuniones = response.data.map(reunion => ({
-      id: reunion.reunion_id,
-      title: reunion.nombre,
-      start: new Date(reunion.fecha_inicio),
-      end: new Date(reunion.fecha_fin),
-      descripcion: reunion.descripcion,
-      type: 'meeting'
-    }));
-    setReuniones(reuniones);
-  } catch (error) {
-    setMessage('Error al obtener las reuniones');
-    console.error('Error fetching reuniones:', error);
-  }
-}; []);
+  const fetchTareas = async () => {
+    const token = Cookies.get('token');
+    if (!token) {
+      setMessage('Token no disponible');
+      console.error('Token no disponible');
+      return;
+    }
+    try {
+      const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const tasks = response.data.map(task => ({
+        id: task.tarea_id,
+        title: task.nombre,
+        start: new Date(task.fecha_limite),
+        end: new Date(task.fecha_limite),
+        allDay: true,
+        type: 'task'
+      }));
+      setTareas(tasks);
+    } catch (error) {
+      setMessage('Error al obtener las tareas');
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  const fetchReuniones = async () => {
+    const token = Cookies.get('token');
+    if (!token) {
+      setMessage('Token no disponible');
+      console.error('Token no disponible');
+      return;
+    }
+    try {
+      const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const reuniones = response.data.map(reunion => ({
+        id: reunion.reunion_id,
+        title: reunion.nombre,
+        start: new Date(reunion.fecha_inicio),
+        end: new Date(reunion.fecha_fin),
+        descripcion: reunion.descripcion,
+        type: 'meeting'
+      }));
+      setReuniones(reuniones);
+    } catch (error) {
+      setMessage('Error al obtener las reuniones');
+      console.error('Error fetching reuniones:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTareas();
+    fetchReuniones();
+  }, []);
 
   const openConfirmation = (message, callback) => {
     setConfirmationMessage(message);
@@ -94,7 +97,7 @@ const fetchReuniones = async () => {
     setModalIsOpen(false);
   };
 
-  const handleSelect = ({ start, end }) => {
+  const handleSelect = async ({ start, end }) => {
     setIsEdit(false);
     setNewMeeting({
       ...newMeeting,
@@ -117,7 +120,6 @@ const fetchReuniones = async () => {
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -130,7 +132,6 @@ const fetchReuniones = async () => {
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -161,7 +162,6 @@ const fetchReuniones = async () => {
       try {
         await axios.delete(`https://back-kuro-gestor-1.onrender.com/api/meeting/${id}`, {
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -233,7 +233,7 @@ const fetchReuniones = async () => {
     const isTask = event.type === 'task';
     const eventStyle = {
       height: '12px',
-      fontSize: '13px',
+      fontSize: '13px' ,
       backgroundColor: isTask ? '#f0ad4e' : '#5bc0de',
       color: '#fff',
       borderRadius: '5px',
@@ -256,7 +256,7 @@ const fetchReuniones = async () => {
       setSelectedDate(new Date(value));
     }
   };
-
+  
   const isValidDate = (dateString) => {
     const regEx = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateString.match(regEx)) return false; 
@@ -272,22 +272,23 @@ const fetchReuniones = async () => {
       setUpdatedDate(newDate);
     }
   };
-
+  
   const handleNavigate = (date, view) => {
     setUpdatedDate(date);
   };
-
+  
+  
   return (
     <div>
       {message && <p>{message}</p>}
       <input
-        type="date"
-        onChange={handleDateChange}
-        value={selectedDate.toISOString().split('T')[0]}
-        className="date-input"
-        min="1900-01-01"
-      />
-      <button onClick={handleUpdateCalendar} className="update-button">Clic para ir a la fecha</button>
+      type="date"
+      onChange={handleDateChange}
+      value={selectedDate.toISOString().split('T')[0]}
+      className="date-input"
+      min="1900-01-01"
+    />
+    <button onClick={handleUpdateCalendar} className="update-button">Clic para ir a la fecha</button>
 
       <Calendar
         localizer={localizer}
