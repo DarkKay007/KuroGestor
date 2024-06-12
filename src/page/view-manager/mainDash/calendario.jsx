@@ -28,7 +28,6 @@ const Calendario = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [updatedDate, setUpdatedDate] = useState(new Date());
 
-
   const fetchTareas = async () => {
     const token = Cookies.get('token');
     if (!token) {
@@ -39,7 +38,7 @@ const Calendario = () => {
     try {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
         headers: {
-              'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       });
@@ -68,8 +67,7 @@ const Calendario = () => {
     try {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
         headers: {
-              'Content-Type': 'application/json',
-
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       });
@@ -100,7 +98,7 @@ const Calendario = () => {
     setModalIsOpen(false);
   };
 
-  const handleSelect = async ({ start, end }) => {
+  const handleSelect = ({ start, end }) => {
     setIsEdit(false);
     setNewMeeting({
       ...newMeeting,
@@ -123,8 +121,7 @@ const Calendario = () => {
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
           headers: {
-                'Content-Type': 'application/json',
-
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -137,8 +134,7 @@ const Calendario = () => {
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
           headers: {
-                'Content-Type': 'application/json',
-
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -169,8 +165,7 @@ const Calendario = () => {
       try {
         await axios.delete(`https://back-kuro-gestor-1.onrender.com/api/meeting/${id}`, {
           headers: {
-                'Content-Type': 'application/json',
-
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -242,7 +237,7 @@ const Calendario = () => {
     const isTask = event.type === 'task';
     const eventStyle = {
       height: '12px',
-      fontSize: '13px' ,
+      fontSize: '13px',
       backgroundColor: isTask ? '#f0ad4e' : '#5bc0de',
       color: '#fff',
       borderRadius: '5px',
@@ -265,7 +260,7 @@ const Calendario = () => {
       setSelectedDate(new Date(value));
     }
   };
-  
+
   const isValidDate = (dateString) => {
     const regEx = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateString.match(regEx)) return false; 
@@ -281,23 +276,22 @@ const Calendario = () => {
       setUpdatedDate(newDate);
     }
   };
-  
+
   const handleNavigate = (date, view) => {
     setUpdatedDate(date);
   };
-  
-  
+
   return (
     <div>
       {message && <p>{message}</p>}
       <input
-      type="date"
-      onChange={handleDateChange}
-      value={selectedDate.toISOString().split('T')[0]}
-      className="date-input"
-      min="1900-01-01"
-    />
-    <button onClick={handleUpdateCalendar} className="update-button">Clic para ir a la fecha</button>
+        type="date"
+        onChange={handleDateChange}
+        value={selectedDate.toISOString().split('T')[0]}
+        className="date-input"
+        min="1900-01-01"
+      />
+      <button onClick={handleUpdateCalendar} className="update-button">Clic para ir a la fecha</button>
 
       <Calendar
         localizer={localizer}
