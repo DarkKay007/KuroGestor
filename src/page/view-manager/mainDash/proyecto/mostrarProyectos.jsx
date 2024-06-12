@@ -128,18 +128,19 @@ const ShowProjects = () => {
       // Datos del usuario
       doc.setFontSize(12);
       doc.setTextColor(255, 215, 0); // Color dorado
-      doc.text(`ID:`, 50, 40);
-      doc.text(`Nombre:`, 50, 50);
-      doc.text(`Descripcion:`, 50, 60);
-      doc.text(`Estado:`, 50, 70);
-      doc.text(`Prioridad:`, 50, 80); 
-      doc.text(`Manager Email:`, 50, 90);
-      doc.text(`Fecha de Actualizacion:`, 50, 100);
+      doc.text(`ID:`, 20, 40);
+      doc.text(`Nombre:`, 20, 50);
+      doc.text(`Descripcion:`, 20, 60);
+      doc.text(`Estado:`, 20, 70);
+      doc.text(`Prioridad:`, 20, 80); 
+      doc.text(`Manager Email:`, 20, 90);
+      doc.text(`Fecha de Actualizacion:`, 20, 100);
 
       
   
       // Valores del usuario
       doc.setTextColor(0); // Color negro
+      doc.text(`${proyecto.proyecto_id}`, 80, 40);
       doc.text(`${proyecto.nombre}`, 80, 50);
       doc.text(`${proyecto.descripcion}`, 80, 60);
       doc.text(`${proyecto.estado}`, 80, 70);
@@ -179,7 +180,7 @@ const ShowProjects = () => {
 
       <div className="cards-container">
         {proyectos.map((proyecto) => (
-          <div key={proyecto.id} className="card">
+          <div key={proyecto.proyecto_id} className="card">
             <h3 className="card-title">{proyecto.nombre}</h3>
             <p className="card-description">{proyecto.descripcion}</p>
             <p className="card-info">Estado: {proyecto.estado}</p>
