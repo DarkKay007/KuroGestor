@@ -3,7 +3,7 @@ import './style/calendario.css';
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import axios from 'axios';
+import axiosInstance from './axiosInstance'; // Importa la instancia de Axios configurada
 import Cookies from 'js-cookie';
 import Modal from 'react-modal';
 
@@ -36,14 +36,7 @@ const Calendario = () => {
       return;
     }
     try {
-      const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+      const response = await axiosInstance.get('/api/tasks');
       const tasks = response.data.map(task => ({
         id: task.tarea_id,
         title: task.nombre,
@@ -67,14 +60,7 @@ const Calendario = () => {
       return;
     }
     try {
-      const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+      const response = await axiosInstance.get('/api/meetings');
       const reuniones = response.data.map(reunion => ({
         id: reunion.reunion_id,
         title: reunion.nombre,
@@ -118,33 +104,19 @@ const Calendario = () => {
     try {
       let resultado;
       if (isEdit) {
-        resultado = await axios.put(`https://back-kuro-gestor-1.onrender.com/api/meeting/${newMeeting.id}`, {
+        resultado = await axiosInstance.put(`/api/meeting/${newMeeting.id}`, {
           nombre: newMeeting.title,
           descripcion: newMeeting.descripcion,
           fecha_inicio: moment(newMeeting.start).format('YYYY-MM-DD HH:mm:ss'),
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
-        }, {
-           withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Access-Control-Allow-Origin': '*'
-        }
         });
         setMessage('Reunión editada exitosamente');
       } else {
-        resultado = await axios.post('https://back-kuro-gestor-1.onrender.com/api/meeting', {
+        resultado = await axiosInstance.post('/api/meeting', {
           nombre: newMeeting.title,
           descripcion: newMeeting.descripcion,
           fecha_inicio: moment(newMeeting.start).format('YYYY-MM-DD HH:mm:ss'),
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
-        }, {
-          withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Access-Control-Allow-Origin': '*'
-        }
         });
         setMessage('Reunión creada exitosamente');
       }
@@ -171,14 +143,7 @@ const Calendario = () => {
     openConfirmation(`¿Está seguro de eliminar la reunión "${title}"?`, async () => {
       const token = Cookies.get('token');
       try {
-        await axios.delete(`https://back-kuro-gestor-1.onrender.com/api/meeting/${id}`, {
-           withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Access-Control-Allow-Origin': '*'
-        }
-        });
+        await axiosInstance.delete(`/api/meeting/${id}`);
         setMessage('Reunión eliminada exitosamente');
         fetchReuniones();
         closeModal();
