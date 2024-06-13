@@ -3,7 +3,7 @@ import './style/calendario.css';
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import axiosInstance from './axiosInstance'; // Importa la instancia de Axios configurada
+import axios from 'axios'; // Importamos Axios directamente
 import Cookies from 'js-cookie';
 import Modal from 'react-modal';
 
@@ -27,9 +27,19 @@ const Calendario = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [updatedDate, setUpdatedDate] = useState(new Date());
 
+  useEffect(() => {
+    fetchTareas();
+    fetchReuniones();
+  }, []);
+
   const fetchTareas = async () => {
     try {
-      const response = await axiosInstance.get('/api/tasks');
+      const token = Cookies.get('token');
+      const response = await axios.get('https://backendkurogestor.onrender.com/api/tasks', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const tasks = response.data.map(task => ({
         id: task.tarea_id,
         title: task.nombre,
@@ -47,7 +57,12 @@ const Calendario = () => {
 
   const fetchReuniones = async () => {
     try {
-      const response = await axiosInstance.get('/api/meetings');
+      const token = Cookies.get('token');
+      const response = await axios.get('https://backendkurogestor.onrender.com/api/meetings', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const reuniones = response.data.map(reunion => ({
         id: reunion.reunion_id,
         title: reunion.nombre,
@@ -63,29 +78,33 @@ const Calendario = () => {
     }
   };
 
-  useEffect(() => {
-    fetchTareas();
-    fetchReuniones();
-  }, []);
-
   const handleCreateOrEdit = async (e) => {
     e.preventDefault();
     try {
       let resultado;
+      const token = Cookies.get('token');
       if (isEdit) {
-        resultado = await axiosInstance.put(`/api/meeting/${newMeeting.id}`, {
+        resultado = await axios.put(`https://backendkurogestor.onrender.com/api/meeting/${newMeeting.id}`, {
           nombre: newMeeting.title,
           descripcion: newMeeting.descripcion,
           fecha_inicio: moment(newMeeting.start).format('YYYY-MM-DD HH:mm:ss'),
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
         setMessage('Reunión editada exitosamente');
       } else {
-        resultado = await axiosInstance.post('/api/meeting', {
+        resultado = await axios.post('https://backendkurogestor.onrender.com/api/meeting', {
           nombre: newMeeting.title,
           descripcion: newMeeting.descripcion,
           fecha_inicio: moment(newMeeting.start).format('YYYY-MM-DD HH:mm:ss'),
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
         setMessage('Reunión creada exitosamente');
       }
@@ -108,10 +127,15 @@ const Calendario = () => {
     }
 
     const { id, title } = selectedMeeting;
+    const token = Cookies.get('token');
 
     openConfirmation(`¿Está seguro de eliminar la reunión "${title}"?`, async () => {
       try {
-        await axiosInstance.delete(`/api/meeting/${id}`);
+        await axios.delete(`https://backendkurogestor.onrender.com/api/meeting/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setMessage('Reunión eliminada exitosamente');
         fetchReuniones();
         closeModal();
