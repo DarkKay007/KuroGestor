@@ -37,6 +37,7 @@ const Calendario = () => {
     }
     try {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -67,6 +68,7 @@ const Calendario = () => {
     }
     try {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -122,10 +124,12 @@ const Calendario = () => {
           fecha_inicio: moment(newMeeting.start).format('YYYY-MM-DD HH:mm:ss'),
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+           withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Access-Control-Allow-Origin': '*'
+        }
         });
         setMessage('Reunión editada exitosamente');
       } else {
@@ -135,10 +139,12 @@ const Calendario = () => {
           fecha_inicio: moment(newMeeting.start).format('YYYY-MM-DD HH:mm:ss'),
           fecha_fin: moment(newMeeting.end).format('YYYY-MM-DD HH:mm:ss')
         }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+          withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Access-Control-Allow-Origin': '*'
+        }
         });
         setMessage('Reunión creada exitosamente');
       }
@@ -166,10 +172,12 @@ const Calendario = () => {
       const token = Cookies.get('token');
       try {
         await axios.delete(`https://back-kuro-gestor-1.onrender.com/api/meeting/${id}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+           withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Access-Control-Allow-Origin': '*'
+        }
         });
         setMessage('Reunión eliminada exitosamente');
         fetchReuniones();
