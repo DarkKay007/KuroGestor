@@ -17,7 +17,6 @@ const Calendario = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [confirmationCallback, setConfirmationCallback] = useState(null);
   const [newMeeting, setNewMeeting] = useState({
     title: '',
     descripcion: '',
@@ -29,12 +28,6 @@ const Calendario = () => {
   const [updatedDate, setUpdatedDate] = useState(new Date());
 
   const fetchTareas = async () => {
-    const token = Cookies.get('token');
-    if (!token) {
-      setMessage('Token no disponible');
-      console.error('Token no disponible');
-      return;
-    }
     try {
       const response = await axiosInstance.get('/api/tasks');
       const tasks = response.data.map(task => ({
@@ -47,18 +40,12 @@ const Calendario = () => {
       }));
       setTareas(tasks);
     } catch (error) {
-      setMessage('Error al obtener las tareas');
       console.error('Error fetching tasks:', error);
+      setMessage('Error al obtener las tareas');
     }
   };
 
   const fetchReuniones = async () => {
-    const token = Cookies.get('token');
-    if (!token) {
-      setMessage('Token no disponible');
-      console.error('Token no disponible');
-      return;
-    }
     try {
       const response = await axiosInstance.get('/api/meetings');
       const reuniones = response.data.map(reunion => ({
@@ -71,8 +58,8 @@ const Calendario = () => {
       }));
       setReuniones(reuniones);
     } catch (error) {
-      setMessage('Error al obtener las reuniones');
       console.error('Error fetching reuniones:', error);
+      setMessage('Error al obtener las reuniones');
     }
   };
 
@@ -80,27 +67,9 @@ const Calendario = () => {
     fetchTareas();
     fetchReuniones();
   }, []);
-  
-  const openConfirmation = (message, callback) => {
-    setConfirmationMessage(message);
-    setConfirmationCallback(() => callback);
-    setIsConfirmationOpen(true);
-    setModalIsOpen(false);
-  };
-
-  const handleSelect = ({ start, end }) => {
-    setIsEdit(false);
-    setNewMeeting({
-      ...newMeeting,
-      start: start,
-      end: end
-    });
-    setModalIsOpen(true);
-  };
 
   const handleCreateOrEdit = async (e) => {
     e.preventDefault();
-    const token = Cookies.get('token');
     try {
       let resultado;
       if (isEdit) {
@@ -127,12 +96,12 @@ const Calendario = () => {
         setMessage('Error al crear/editar la reunión');
       }
     } catch (error) {
-      setMessage('Error al crear/editar la reunión');
       console.error('Error creating/editing meeting:', error);
+      setMessage('Error al crear/editar la reunión');
     }
   };
 
-  const handleDelete = (event) => {
+  const handleDelete = async () => {
     if (!selectedMeeting) {
       console.error('selectedMeeting is null');
       return;
@@ -141,30 +110,26 @@ const Calendario = () => {
     const { id, title } = selectedMeeting;
 
     openConfirmation(`¿Está seguro de eliminar la reunión "${title}"?`, async () => {
-      const token = Cookies.get('token');
       try {
         await axiosInstance.delete(`/api/meeting/${id}`);
         setMessage('Reunión eliminada exitosamente');
         fetchReuniones();
         closeModal();
       } catch (error) {
-        setMessage('Error al eliminar la reunión');
         console.error('Error deleting meeting:', error);
+        setMessage('Error al eliminar la reunión');
       }
     });
   };
 
-  const handleCancelDelete = () => {
-    setIsConfirmationOpen(false);
-  };
-
-  const handleConfirmDelete = () => {
-    if (confirmationCallback) confirmationCallback();
-    setIsConfirmationOpen(false);
+  const handleSelectEvent = (event) => {
+    if (event.type === 'meeting') {
+      setSelectedMeeting(event);
+      handleEdit(event);
+    }
   };
 
   const handleEdit = (event) => {
-    if (event.type !== 'meeting') return;
     setIsEdit(true);
     const { id, title, descripcion, start, end } = event;
     setNewMeeting({
@@ -177,10 +142,11 @@ const Calendario = () => {
     setModalIsOpen(true);
   };
 
-  const handleSelectEvent = (event) => {
-    if (event.type !== 'meeting') return;
-    setSelectedMeeting(event);
-    handleEdit(event);
+  const openConfirmation = (message, callback) => {
+    setConfirmationMessage(message);
+    setConfirmationCallback(() => callback);
+    setIsConfirmationOpen(true);
+    setModalIsOpen(false);
   };
 
   const closeModal = () => {
@@ -194,18 +160,13 @@ const Calendario = () => {
     });
   };
 
-  const ConfirmationCard = ({ message, onConfirm, onCancel }) => {
-    return (
-      <div className="confirmation-overlay">
-        <div className="confirmation-card">
-          <div className="confirmation-message">{message}</div>
-          <div className="confirmation-buttons">
-            <button className="confirm-button" onClick={onConfirm}>Confirmar</button>
-            <button className="cancel-button" onClick={onCancel}>Cancelar</button>
-          </div>
-        </div>
-      </div>
-    );
+  const handleCancelDelete = () => {
+    setIsConfirmationOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmationCallback) confirmationCallback();
+    setIsConfirmationOpen(false);
   };
 
   const EventComponent = ({ event }) => {
@@ -223,7 +184,7 @@ const Calendario = () => {
     const eventTitle = event.title || '';
 
     return (
-      <div style={eventStyle} onClick={() => handleDelete(event)}>
+      <div style={eventStyle} onClick={event.type === 'meeting' ? handleDelete : null}>
         {eventTitle}
       </div>
     );
@@ -231,7 +192,7 @@ const Calendario = () => {
 
   const handleDateChange = (e) => {
     const value = e.target.value;
-    if (value !== '0' && isValidDate(value)) {
+    if (value && isValidDate(value)) {
       setSelectedDate(new Date(value));
     }
   };
@@ -245,7 +206,7 @@ const Calendario = () => {
   };
 
   const handleUpdateCalendar = () => {
-    if (selectedDate !== '0') {
+    if (selectedDate && selectedDate !== '0') {
       const newDate = new Date(selectedDate);
       newDate.setDate(newDate.getDate() + 1);
       setUpdatedDate(newDate);
@@ -277,7 +238,6 @@ const Calendario = () => {
         views={['month', 'week', 'day']}
         step={15}
         selectable
-        onSelectSlot={handleSelect}
         onSelectEvent={handleSelectEvent}
         components={{
           event: EventComponent
@@ -315,52 +275,76 @@ const Calendario = () => {
           <label htmlFor="title" style={{ color: '#d4af37', marginBottom: '10px' }}>Título:</label>
           <input
             type="text"
+text"
             id="title"
             value={newMeeting.title}
             onChange={(e) => setNewMeeting({ ...newMeeting, title: e.target.value })}
             required
-            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px', border: '1px solid #d4af37', backgroundColor: '#444' }}
+            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px' }}
           />
           <label htmlFor="descripcion" style={{ color: '#d4af37', marginBottom: '10px' }}>Descripción:</label>
           <textarea
             id="descripcion"
             value={newMeeting.descripcion}
             onChange={(e) => setNewMeeting({ ...newMeeting, descripcion: e.target.value })}
-            required
-            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px', border: '1px solid #d4af37', backgroundColor: '#444' }}
+            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px' }}
           />
           <label htmlFor="start" style={{ color: '#d4af37', marginBottom: '10px' }}>Inicio:</label>
           <input
             type="datetime-local"
             id="start"
-            value={newMeeting.start ? moment(newMeeting.start).format('YYYY-MM-DDTHH:mm') : ''}
-            onChange={(e) => setNewMeeting({ ...newMeeting, start: e.target.value })}
+            value={moment(newMeeting.start).format('YYYY-MM-DDTHH:mm')}
+            onChange={(e) => setNewMeeting({ ...newMeeting, start: new Date(e.target.value) })}
             required
-            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px', border: '1px solid #d4af37', backgroundColor: '#444' }}
+            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px' }}
           />
           <label htmlFor="end" style={{ color: '#d4af37', marginBottom: '10px' }}>Fin:</label>
           <input
             type="datetime-local"
             id="end"
-            value={newMeeting.end ? moment(newMeeting.end).format('YYYY-MM-DDTHH:mm') : ''}
-            onChange={(e) => setNewMeeting({ ...newMeeting, end: e.target.value })}
+            value={moment(newMeeting.end).format('YYYY-MM-DDTHH:mm')}
+            onChange={(e) => setNewMeeting({ ...newMeeting, end: new Date(e.target.value) })}
             required
-            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px', border: '1px solid #d4af37', backgroundColor: '#444' }}
+            style={{ marginBottom: '10px', padding: '5px', borderRadius: '5px' }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <button type="submit" style={{ padding: '5px', borderRadius: '5px', border: 'none', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer' }}>{isEdit ? 'Guardar Cambios' : 'Crear'}</button>
-            <button type="button" onClick={closeModal} style={{ padding: '5px', borderRadius: '5px', border: 'none', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer' }}>Cancelar</button>
-            {isEdit && <button type="button" onClick={handleDelete} style={{ padding: '5px', borderRadius: '5px', border: 'none', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer' }}>Eliminar</button>}
+            <button type="submit" style={{ padding: '5px', borderRadius: '5px', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer', width: '45%' }}>Guardar</button>
+            <button type="button" onClick={closeModal} style={{ padding: '5px', borderRadius: '5px', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer', width: '45%' }}>Cancelar</button>
           </div>
         </form>
       </Modal>
-      {isConfirmationOpen && (
-        <ConfirmationCard
-          message={confirmationMessage}
-          onConfirm={handleConfirmDelete}
-          onCancel={handleCancelDelete}
-        />
-      )}
+      <Modal
+        isOpen={isConfirmationOpen}
+        onRequestClose={handleCancelDelete}
+        contentLabel="Confirmación de eliminación"
+        ariaHideApp={false}
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1000
+          },
+          content: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#333',
+            color: '#d4af37',
+            borderRadius: '10px',
+            padding: '20px',
+            zIndex: 1001
+          }
+        }}
+      >
+        <h2 style={{ color: '#d4af37', textAlign: 'center', marginBottom: '20px' }}>Confirmar eliminación</h2>
+        <p style={{ color: '#d4af37', marginBottom: '20px' }}>{confirmationMessage}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <button onClick={handleConfirmDelete} style={{ padding: '5px', borderRadius: '5px', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer', width: '45%' }}>Eliminar</button>
+          <button onClick={handleCancelDelete} style={{ padding: '5px', borderRadius: '5px', backgroundColor: '#d4af37', color: '#333', cursor: 'pointer', width: '45%' }}>Cancelar</button>
+        </div>
+      </Modal>
     </div>
   );
 };
