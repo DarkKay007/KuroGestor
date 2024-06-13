@@ -275,7 +275,6 @@ const Calendario = () => {
           <label htmlFor="title" style={{ color: '#d4af37', marginBottom: '10px' }}>Título:</label>
           <input
             type="text"
-text"
             id="title"
             value={newMeeting.title}
             onChange={(e) => setNewMeeting({ ...newMeeting, title: e.target.value })}
