@@ -39,7 +39,8 @@ const Calendario = () => {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/tasks', {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Access-Control-Allow-Origin': '*'
         }
       });
       const tasks = response.data.map(task => ({
@@ -68,7 +69,8 @@ const Calendario = () => {
       const response = await axios.get('https://back-kuro-gestor-1.onrender.com/api/meetings', {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Access-Control-Allow-Origin': '*'
         }
       });
       const reuniones = response.data.map(reunion => ({
@@ -90,7 +92,7 @@ const Calendario = () => {
     fetchTareas();
     fetchReuniones();
   }, []);
-
+  
   const openConfirmation = (message, callback) => {
     setConfirmationMessage(message);
     setConfirmationCallback(() => callback);
